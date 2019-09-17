@@ -2,7 +2,6 @@ package com.github.bubinimara.rates.app;
 
 import android.content.Context;
 import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,8 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.bubinimara.rates.R;
+import com.github.bubinimara.rates.app.utils.EmptyTextWatcher;
+import com.github.bubinimara.rates.app.utils.RatesDiffUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +48,6 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
     }
 
     protected Holder.Listener createHolderListener() {
-        //return adapterPosition -> moveItem(adapterPosition,0);
         return new Holder.Listener() {
             @Override
             public void onClick(int adapterPosition) {
@@ -95,19 +95,24 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
     protected RateModel getItem(int position){
         return rates.get(position);
     }
+
     @Override
     public int getItemCount() {
         return rates.size();
     }
 
-    public RateChangeListener getRateChangeListener() {
-        return rateChangeListener;
-    }
-
+    /**
+     * Called every time the current currency is changed by the user
+     * @param rateChangeListener the new exchange rate
+     */
     public void setRateChangeListener(RateChangeListener rateChangeListener) {
         this.rateChangeListener = rateChangeListener;
     }
 
+    /**
+     * Update the list
+     * @param rateModels the rates to show
+     */
     public void updateRates(@NonNull List<RateModel> rateModels) {
         if(rates.isEmpty()){
             rates.addAll(rateModels);
@@ -136,49 +141,6 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         }
     }
 
-    public static class RatesDiffUtils extends DiffUtil.Callback{
-        private final List<RateModel> oldRates;
-        private final List<RateModel> newRates;
-
-        public RatesDiffUtils(List<RateModel> oldRates, List<RateModel> newRates) {
-            this.oldRates = oldRates;
-            this.newRates = newRates;
-        }
-
-        @Override
-        public int getOldListSize() {
-            return oldRates.size();
-        }
-
-        @Override
-        public int getNewListSize() {
-            return newRates.size();
-        }
-
-        private RateModel getOldItem(int oldItemPosition) {
-            return oldRates.get(oldItemPosition);
-        }
-
-        private RateModel getNewItem(int newItemPosition) {
-            return newRates.get(newItemPosition);
-        }
-
-        @Override
-        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            RateModel newItem = getNewItem(newItemPosition);
-            RateModel oldItem = getOldItem(oldItemPosition);
-            return newItem.isTheSameAs(oldItem);
-        }
-
-
-        @Override
-        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-            RateModel newItem = getNewItem(newItemPosition);
-            RateModel oldItem = getOldItem(oldItemPosition);
-            return newItem.areContentsTheSame(oldItem);
-        }
-
-    }
     static class Holder extends RecyclerView.ViewHolder {
 
         interface Listener{
@@ -196,21 +158,12 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         @NonNull
         private final Listener listener;
 
-        private TextWatcher textWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
+        private final EmptyTextWatcher textWatcher = new EmptyTextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 listener.onValueChanged(s.toString());
             }
+
         };
 
         Holder(@NonNull View itemView,@NonNull Listener listener) {
