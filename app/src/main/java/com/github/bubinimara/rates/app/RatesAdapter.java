@@ -53,11 +53,15 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
     public void updateRates(@NonNull List<RateModel> rateModels) {
         rates.clear();
         rates.addAll(rateModels);
+        notifyDataSetChanged();
     }
 
     public static class Holder extends RecyclerView.ViewHolder {
         @BindView(R.id.tv_code)
         TextView code;
+
+        @BindView(R.id.tv_value)
+        TextView value;
 
         public Holder(@NonNull View itemView) {
             super(itemView);
@@ -66,6 +70,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
 
         void set(RateModel rate){
             code.setText(rate.getCode());
+            value.setText(rate.getValue());
         }
     }
 }
