@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.bubinimara.rates.R;
@@ -51,19 +52,62 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
     }
 
     public void updateRates(@NonNull List<RateModel> rateModels) {
+        if(rates.isEmpty()){
+            rates.addAll(rateModels);
+            notifyItemRangeInserted(0,rates.size());
+        }else{
+            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+                @Override
+                public int getOldListSize() {
+                    return rates.size();
+                }
+
+                @Override
+                public int getNewListSize() {
+                    return rateModels.size();
+                }
+
+                @Override
+                public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                    RateModel newItem = getNewItem(newItemPosition);
+                    RateModel oldItem = getOldItem(oldItemPosition);
+                    return newItem.isTheSameAs(oldItem);
+                }
+
+
+                @Override
+                public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                    RateModel newItem = getNewItem(newItemPosition);
+                    RateModel oldItem = getOldItem(oldItemPosition);
+                    return newItem.equals(oldItem);
+                }
+
+                private RateModel getOldItem(int oldItemPosition) {
+                    return rates.get(oldItemPosition);
+                }
+
+                private RateModel getNewItem(int newItemPosition) {
+                    return rateModels.get(newItemPosition);
+                }
+            });
+
+            rates.clear();
+            rates.addAll(rateModels);
+            diffResult.dispatchUpdatesTo(this);
+        }
         rates.clear();
         rates.addAll(rateModels);
         notifyDataSetChanged();
     }
 
-    public static class Holder extends RecyclerView.ViewHolder {
+    static class Holder extends RecyclerView.ViewHolder {
         @BindView(R.id.tv_code)
         TextView code;
 
         @BindView(R.id.tv_value)
         TextView value;
 
-        public Holder(@NonNull View itemView) {
+        Holder(@NonNull View itemView) {
             super(itemView);
             ButterKnife.bind(this,itemView);
         }
