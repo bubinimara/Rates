@@ -1,10 +1,12 @@
 package com.github.bubinimara.rates.app;
 
 import android.content.Context;
-import android.util.Log;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,9 +28,17 @@ import butterknife.OnClick;
  */
 public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
 
+    interface RateChangeListener{
+        /**
+         * Called whenever current rate change
+         * @param rateModel the current rate change
+         */
+        void onRateChange(RateModel rateModel);
+    }
     private final @NonNull LayoutInflater layoutInflater;
     private final @NonNull  List<RateModel> rates;
     private final @NonNull Holder.Listener holderListener;
+    private RateChangeListener rateChangeListener;
 
     public RatesAdapter(@NonNull Context context) {
         layoutInflater = LayoutInflater.from(context);
@@ -37,7 +47,25 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
     }
 
     protected Holder.Listener createHolderListener() {
-        return adapterPosition -> moveItem(adapterPosition,0);
+        //return adapterPosition -> moveItem(adapterPosition,0);
+        return new Holder.Listener() {
+            @Override
+            public void onClick(int adapterPosition) {
+                moveItem(adapterPosition,0);
+                notifyRateChanged();
+            }
+
+            @Override
+            public void onValueChanged(String value) {
+                notifyRateChanged();
+            }
+        };
+    }
+
+    private void notifyRateChanged() {
+        if(rateChangeListener!=null){
+            rateChangeListener.onRateChange(getItem(0));
+        }
     }
 
     protected void moveItem(int fromPosition,int toPosition){
@@ -70,6 +98,14 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
     @Override
     public int getItemCount() {
         return rates.size();
+    }
+
+    public RateChangeListener getRateChangeListener() {
+        return rateChangeListener;
+    }
+
+    public void setRateChangeListener(RateChangeListener rateChangeListener) {
+        this.rateChangeListener = rateChangeListener;
     }
 
     public void updateRates(@NonNull List<RateModel> rateModels) {
@@ -144,17 +180,38 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
 
     }
     static class Holder extends RecyclerView.ViewHolder {
+
         interface Listener{
             void onClick(int adapterPosition);
+            void onValueChanged(String value);
         }
 
         @BindView(R.id.tv_code)
         TextView code;
-        @BindView(R.id.tv_value)
-        TextView value;
+        @BindView(R.id.tv_desc)
+        TextView desc;
+        @BindView(R.id.et_value)
+        EditText value;
 
         @NonNull
         private final Listener listener;
+
+        private TextWatcher textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                listener.onValueChanged(s.toString());
+            }
+        };
 
         Holder(@NonNull View itemView,@NonNull Listener listener) {
             super(itemView);
@@ -165,13 +222,35 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
 
         void set(RateModel rate){
             code.setText(rate.getCode());
-            value.setText(rate.getValue());
+            desc.setText(rate.getDesc());
+
+            if(getAdapterPosition()==0){
+                enableTextChangeListener();
+            }else{
+                disableTextChangeListener();
+                value.setText(rate.getValue());
+            }
+        }
+
+        private void disableTextChangeListener() {
+            value.removeTextChangedListener(textWatcher);
+            value.setFocusable(false);
+            value.setFocusableInTouchMode(false);
+            value.clearFocus();
+        }
+
+        private void enableTextChangeListener(){
+            value.setFocusable(true);
+            value.setFocusableInTouchMode(true);
+            value.addTextChangedListener(textWatcher);
+            value.requestFocus();
         }
 
         @OnClick(R.id.ll_rates)
         void onClick(){
             if(getLayoutPosition()>0){
                 listener.onClick(getAdapterPosition());
+                enableTextChangeListener();
             }
         }
     }

@@ -1,7 +1,5 @@
 package com.github.bubinimara.rates.app;
 
-import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -14,6 +12,7 @@ import java.util.TimerTask;
 public class RatesViewModel extends ViewModel {
 
     private LiveData<List<RateModel>> ratesLiveData;
+    private RateModel currentRate;
 
 
     public RatesViewModel() {
@@ -31,11 +30,13 @@ public class RatesViewModel extends ViewModel {
         timerToUpdateRate.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                Log.d(TIMER_TASK_NAME, "run: ");
                 List<RateModel> rates = new ArrayList<>();
+                if(currentRate!=null)
+                    rates.add(currentRate);
                 for (int i = 0; i < 10; i++) {
-                    double random = Math.random();
-                    rates.add(new RateModel("code_"+i,"desc_"+i,"value_"+ random,null));
+                    String value = String.valueOf(Math.random());
+                    value = value.substring(0,6);
+                    rates.add(new RateModel("code_"+i,"desc_"+i,value,null));
                 }
                 liveData.postValue(rates);
             }
@@ -45,5 +46,14 @@ public class RatesViewModel extends ViewModel {
 
     public LiveData<List<RateModel>> getRatesLiveData() {
         return ratesLiveData;
+    }
+
+    /**
+     * user inputs
+     * @param rateModel - the new rate value
+     */
+    public void onRateChanged(RateModel rateModel) {
+        // todo: validate
+        currentRate = rateModel;
     }
 }

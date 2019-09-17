@@ -1,18 +1,16 @@
 package com.github.bubinimara.rates.app;
 
-import androidx.lifecycle.ViewModelProviders;
-
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.github.bubinimara.rates.R;
 
@@ -21,7 +19,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class RatesFragment extends Fragment {
+public class RatesFragment extends Fragment implements RatesAdapter.RateChangeListener {
 
     private RatesViewModel mViewModel;
 
@@ -38,6 +36,7 @@ public class RatesFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         adapter = new RatesAdapter(getContext().getApplicationContext());
+        adapter.setRateChangeListener(this);
     }
 
     @Override
@@ -66,4 +65,8 @@ public class RatesFragment extends Fragment {
         adapter.updateRates(rateModels);
     }
 
+    @Override
+    public void onRateChange(RateModel rateModel) {
+        mViewModel.onRateChanged(rateModel);
+    }
 }
