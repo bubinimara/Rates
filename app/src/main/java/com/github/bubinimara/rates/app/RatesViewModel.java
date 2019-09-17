@@ -23,7 +23,7 @@ public class RatesViewModel extends ViewModel {
     // this will be replaced with "domain task"
     private LiveData<List<RateModel>> getLiveData() {
         final String TIMER_TASK_NAME = "RateUpdateScheduleTask";
-        final long ONE_SECOND = 1000;
+        final long ONE_SECOND = 3000;
 
 
         Timer timerToUpdateRate = new Timer();
@@ -39,7 +39,7 @@ public class RatesViewModel extends ViewModel {
                 }
                 liveData.postValue(rates);
             }
-        }, ONE_SECOND,ONE_SECOND);
+        }, 0,ONE_SECOND);
         return liveData;
     }
 

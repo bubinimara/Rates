@@ -50,8 +50,8 @@ public class RateModel {
         this.icon = icon;
     }
 
-    public boolean isTheSameAs(RateModel oldItem) {
-        return oldItem!=null && oldItem.code.equalsIgnoreCase(code);
+    public boolean isTheSameAs(RateModel rateModel) {
+        return rateModel!=null && code.equalsIgnoreCase(rateModel.code);
     }
 
     @Override
@@ -59,14 +59,19 @@ public class RateModel {
         if (this == o) return true;
         if (!(o instanceof RateModel)) return false;
         RateModel rateModel = (RateModel) o;
-        return code.equals(rateModel.code) &&
-                Objects.equals(desc, rateModel.desc) &&
-                value.equals(rateModel.value) &&
-                Objects.equals(icon, rateModel.icon);
+        return isTheSameAs(rateModel);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(code, desc, value, icon);
+    }
+
+    public boolean areContentsTheSame(RateModel rateModel) {
+        return code.equals(rateModel.code) &&
+                Objects.equals(desc, rateModel.desc) &&
+                value.equals(rateModel.value) &&
+                Objects.equals(icon, rateModel.icon);
+
     }
 }
