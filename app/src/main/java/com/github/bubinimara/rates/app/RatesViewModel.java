@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -22,7 +23,7 @@ public class RatesViewModel extends ViewModel {
     // this will be replaced with "domain task"
     private LiveData<List<RateModel>> getLiveData() {
         final String TIMER_TASK_NAME = "RateUpdateScheduleTask";
-        final long ONE_SECOND = 3000;
+        final long ONE_SECOND = 1000;
 
 
         Timer timerToUpdateRate = new Timer();
@@ -30,7 +31,7 @@ public class RatesViewModel extends ViewModel {
         timerToUpdateRate.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                List<RateModel> rates = new ArrayList<>();
+                LinkedHashSet<RateModel> rates = new LinkedHashSet<>();
                 if(currentRate!=null)
                     rates.add(currentRate);
                 for (int i = 0; i < 10; i++) {
@@ -38,7 +39,7 @@ public class RatesViewModel extends ViewModel {
                     value = value.substring(0,6);
                     rates.add(new RateModel("code_"+i,"desc_"+i,value,null));
                 }
-                liveData.postValue(rates);
+                liveData.postValue(new ArrayList<>(rates));
             }
         }, 0,ONE_SECOND);
         return liveData;

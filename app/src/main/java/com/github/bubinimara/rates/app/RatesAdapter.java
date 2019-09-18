@@ -43,7 +43,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
 
     public RatesAdapter(@NonNull Context context) {
         layoutInflater = LayoutInflater.from(context);
-        rates = new ArrayList<>();
+        rates = Collections.synchronizedList(new ArrayList<>());
         holderListener = createHolderListener();
     }
 

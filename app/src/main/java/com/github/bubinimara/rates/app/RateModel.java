@@ -1,5 +1,7 @@
 package com.github.bubinimara.rates.app;
 
+import androidx.annotation.NonNull;
+
 import java.util.Objects;
 
 /**
@@ -64,7 +66,7 @@ public class RateModel {
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, desc, value, icon);
+        return Objects.hash(code);
     }
 
     public boolean areContentsTheSame(RateModel rateModel) {
@@ -72,6 +74,11 @@ public class RateModel {
                 Objects.equals(desc, rateModel.desc) &&
                 value.equals(rateModel.value) &&
                 Objects.equals(icon, rateModel.icon);
+    }
 
+    @NonNull
+    @Override
+    public String toString() {
+        return "CODE: "+code+"\tVALUE: "+value;
     }
 }
