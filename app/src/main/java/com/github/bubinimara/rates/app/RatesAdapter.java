@@ -51,7 +51,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         return new Holder.Listener() {
             @Override
             public void onClick(int adapterPosition) {
-                moveItem(adapterPosition,0);
+                moveItemAtTheTop(adapterPosition);
                 notifyRateChanged();
             }
 
@@ -68,17 +68,17 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         }
     }
 
-    protected void moveItem(int fromPosition,int toPosition){
-        if (fromPosition < toPosition) {
-            for (int i = fromPosition; i < toPosition; i++) {
-                Collections.swap(rates, i, i + 1);
-            }
-        } else {
-            for (int i = fromPosition; i > toPosition; i--) {
+    protected void moveItemAtTheTop(int fromPosition){
+            for (int i = fromPosition; i > 0; i--) {
                 Collections.swap(rates, i, i - 1);
             }
-        }
-        notifyItemMoved(fromPosition, toPosition);
+
+        notifyItemMoved(fromPosition, 0);
+        // todo: find clear solution to update focus
+        // to force redraw - ( trick for text focus )
+        notifyItemChanged(0, null);
+        notifyItemChanged(1, null);
+
     }
     @NonNull
     @Override

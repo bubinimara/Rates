@@ -68,5 +68,6 @@ public class RatesFragment extends Fragment implements RatesAdapter.RateChangeLi
     @Override
     public void onRateChange(RateModel rateModel) {
         mViewModel.onRateChanged(rateModel);
+        recyclerView.scrollToPosition(0);
     }
 }
