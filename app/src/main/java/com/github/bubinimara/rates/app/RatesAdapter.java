@@ -57,6 +57,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
 
             @Override
             public void onValueChanged(String value) {
+                getItem(0).setValue(value);
                 notifyRateChanged();
             }
         };
@@ -112,6 +113,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
     /**
      * Update the list
      * @param rateModels the rates to show
+     *
      */
     public void updateRates(@NonNull List<RateModel> rateModels) {
         if(rates.isEmpty()){
@@ -119,6 +121,12 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
             notifyItemRangeInserted(0,rates.size());
         }else{
             List<RateModel> newList = new ArrayList<>(rateModels.size());
+            //todo: -- remove --
+            // temporary hack to prevent not update the first item
+            // !? the first item should be treated as special ?!
+            rateModels.remove(getItem(0));
+            newList.add(getItem(0));
+
             // update current items at the same position
             for (RateModel r: rates) {
                 int i = rateModels.indexOf(r);
@@ -176,8 +184,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         void set(RateModel rate){
             code.setText(rate.getCode());
             desc.setText(rate.getDesc());
-
-            if(getAdapterPosition()==0){
+            if(getLayoutPosition()==0){
                 enableTextChangeListener();
             }else{
                 disableTextChangeListener();
