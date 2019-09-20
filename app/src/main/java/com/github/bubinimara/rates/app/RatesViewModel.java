@@ -1,49 +1,54 @@
 package com.github.bubinimara.rates.app;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
+import com.github.bubinimara.rates.domain.RatesInteractor;
+import com.github.bubinimara.rates.domain.repo.ExchangeRate;
+
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class RatesViewModel extends ViewModel {
 
     private LiveData<List<RateModel>> ratesLiveData;
+
+    private RatesInteractor ratesInteractor = new RatesInteractor();
     private RateModel currentRate;
 
 
     public RatesViewModel() {
         ratesLiveData = getLiveData();
+        initialFecthOfRates();
     }
 
-    // this will be replaced with "domain task"
+    private void initialFecthOfRates() {
+        // fetch .. etc
+        RateModel r = new RateModel("EUR", "", "1", null);
+        onRateChanged(r);
+    }
+
+
     private LiveData<List<RateModel>> getLiveData() {
-        final String TIMER_TASK_NAME = "RateUpdateScheduleTask";
-        final long ONE_SECOND = 1000;
-
-
-        Timer timerToUpdateRate = new Timer();
-        MutableLiveData<List<RateModel>> liveData = new MutableLiveData<>();
-        timerToUpdateRate.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                LinkedHashSet<RateModel> rates = new LinkedHashSet<>();
-                if(currentRate!=null)
-                    rates.add(currentRate);
-                for (int i = 0; i < 10; i++) {
-                    String value = String.valueOf(Math.random());
-                    value = value.substring(0,6);
-                    rates.add(new RateModel("code_"+i,"desc_"+i,value,null));
-                }
-                liveData.postValue(new ArrayList<>(rates));
+        return Transformations.map(ratesInteractor.getRatesLiveData(), input -> {
+            List<RateModel> rates = new ArrayList<>(input.size());
+            for (ExchangeRate er : input) {
+                rates.add(convertExchangeRateToRateModel(er));
             }
-        }, 0,ONE_SECOND);
-        return liveData;
+            return rates;
+        });
+
     }
+
+    private RateModel convertExchangeRateToRateModel(ExchangeRate er) {
+        return new RateModel(er.getCode(),er.getDescription(), getRateValue(er),null);
+    }
+
+    private String getRateValue(ExchangeRate er) {
+        return (er.getExchangeRate())+" x " + currentRate.getValue();
+    }
+
 
     public LiveData<List<RateModel>> getRatesLiveData() {
         return ratesLiveData;
@@ -54,7 +59,8 @@ public class RatesViewModel extends ViewModel {
      * @param rateModel - the new rate value
      */
     public void onRateChanged(RateModel rateModel) {
-        // todo: validate
+        // todo: validate - check change
+        ratesInteractor.fetchRatesAtFixedTime(rateModel.getCode());
         currentRate = rateModel;
     }
 }
