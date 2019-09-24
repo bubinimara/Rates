@@ -16,6 +16,13 @@ public class ExchangeRate {
         this.exchangeRate = exchangeRate;
     }
 
+    public ExchangeRate(String code, String description, double exchangeRate, String iconUrl) {
+        this.code = code;
+        this.description = description;
+        this.exchangeRate = exchangeRate;
+        this.iconUrl = iconUrl;
+    }
+
     public String getCode() {
         return code;
     }
