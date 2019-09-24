@@ -54,6 +54,12 @@ public class RatesViewModel extends ViewModel {
         return ratesLiveData;
     }
 
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        ratesInteractor.clear();
+    }
+
     /**
      * user inputs
      * @param rateModel - the new rate value
