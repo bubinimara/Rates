@@ -1,13 +1,14 @@
 package com.github.bubinimara.rates.data;
 
-import com.github.bubinimara.rates.data.mock.RateExchangeApiMock;
-import com.github.bubinimara.rates.data.mock.RateInfoApiMock;
+import com.github.bubinimara.rates.data.impl.CurrencyInfoRepositoryImpl;
+import com.github.bubinimara.rates.data.impl.RateExchangeRepositoryImpl;
+import com.github.bubinimara.rates.data.mock.RateExchangeRepositoryMock;
+import com.github.bubinimara.rates.data.mock.CurrencyInfoRepositoryMock;
 import com.github.bubinimara.rates.domain.repo.ExchangeRate;
 import com.github.bubinimara.rates.domain.repo.Repository;
 
 import java.util.List;
 
-import io.reactivex.Observable;
 import io.reactivex.Single;
 
 /**
@@ -15,31 +16,27 @@ import io.reactivex.Single;
  */
 public class RepositoryImpl implements Repository {
 
-    public interface RateExchangeApi {
-        Observable<List<RateExchangeEntity>> getExchangeRate(String code);
-    }
-
-    public interface RateInfoApi {
-        Observable<RateInfoEntity> getRateInfo(String code);
-    }
-
-    private RateExchangeApi rateExchangeApi;
-    private RateInfoApi rateinfoApi;
+    private RateExchangeRepository rateExchangeRepository;
+    private CurrencyInfoRepository rateinfoApi;
 
     public static RepositoryImpl createMockRepository(){
-        return new RepositoryImpl(new RateExchangeApiMock(),new RateInfoApiMock());
+        return new RepositoryImpl(new RateExchangeRepositoryMock(),new CurrencyInfoRepositoryMock());
     }
 
-    public RepositoryImpl(RateExchangeApi rateExchangeApi, RateInfoApi rateinfoApi) {
-        this.rateExchangeApi = rateExchangeApi;
+    public static RepositoryImpl createRepository(){
+        return new RepositoryImpl(new RateExchangeRepositoryImpl(),new CurrencyInfoRepositoryImpl());
+    }
+
+    public RepositoryImpl(RateExchangeRepository rateExchangeRepository, CurrencyInfoRepository rateinfoApi) {
+        this.rateExchangeRepository = rateExchangeRepository;
         this.rateinfoApi = rateinfoApi;
     }
 
     public Single<List<ExchangeRate>> getExchangeRate(String code){
-        return rateExchangeApi.getExchangeRate(code)
+        return rateExchangeRepository.getExchangeRate(code)
                 .flatMapIterable(m->m)
-                .switchMap(rateExchangeEntity -> rateinfoApi.getRateInfo(rateExchangeEntity.getCurrency())
-                        .map(rateInfoEntity -> new ExchangeRate(rateExchangeEntity.getCurrency(),rateInfoEntity.getDescription(),rateExchangeEntity.getValue(),rateInfoEntity.getIconUrl())))
+                .switchMap(rateExchangeEntity -> rateinfoApi.getCurrencyInfo(rateExchangeEntity.getCurrency())
+                        .map(currencyInfoEntity -> new ExchangeRate(rateExchangeEntity.getCurrency(), currencyInfoEntity.getDescription(), rateExchangeEntity.getExchangeRate(), currencyInfoEntity.getIconUrl())))
                 .toList();
     }
 

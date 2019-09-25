@@ -1,5 +1,7 @@
 package com.github.bubinimara.rates.domain;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -10,6 +12,8 @@ import com.github.bubinimara.rates.domain.repo.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.login.LoginException;
 
 import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
@@ -32,7 +36,7 @@ public class RatesInteractor {
 
     public RatesInteractor() {
         rates = new MutableLiveData<>();
-        this.repository = RepositoryImpl.createMockRepository();
+        this.repository = RepositoryImpl.createRepository();
     }
 
     public void fetchRatesAtFixedTime(final String code,final double value){
@@ -59,6 +63,7 @@ public class RatesInteractor {
                     rates.postValue(exchangeRates);
                 }, throwable -> {
                     // todo:treat it
+                    Log.e("MYDEBUG", "fetchRates: ",throwable );
                 });
 
     }

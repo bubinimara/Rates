@@ -1,4 +1,4 @@
-package com.github.bubinimara.rates.data;
+package com.github.bubinimara.rates.data.model;
 
 import java.util.Objects;
 
@@ -6,12 +6,19 @@ import java.util.Objects;
  * Created by davide.
  */
 public class RateExchangeEntity {
+    /**
+     * Currency currency
+     */
     private String currency;
-    private double value;
+    
+    /**
+     * Currency exchange rate
+     */
+    private double exchangeRate;
 
-    public RateExchangeEntity(String currency, double value) {
+    public RateExchangeEntity(String currency, double exchangeRate) {
         this.currency = currency;
-        this.value = value;
+        this.exchangeRate = exchangeRate;
     }
 
     public String getCurrency() {
@@ -22,12 +29,12 @@ public class RateExchangeEntity {
         this.currency = currency;
     }
 
-    public double getValue() {
-        return value;
+    public double getExchangeRate() {
+        return exchangeRate;
     }
 
-    public void setValue(double value) {
-        this.value = value;
+    public void setExchangeRate(double exchangeRate) {
+        this.exchangeRate = exchangeRate;
     }
 
     @Override
