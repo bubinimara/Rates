@@ -1,6 +1,6 @@
 package com.github.bubinimara.rates.data.mock;
 
-import com.github.bubinimara.rates.data.RateInfoEntity;
+import com.github.bubinimara.rates.data.model.CurrencyInfoEntity;
 import com.github.bubinimara.rates.data.RepositoryImpl;
 
 import io.reactivex.Observable;
@@ -10,7 +10,7 @@ import io.reactivex.Observable;
  */
 public class RateInfoApiMock implements RepositoryImpl.RateInfoApi {
     @Override
-    public Observable<RateInfoEntity> getRateInfo(String code) {
-        return Observable.just(new RateInfoEntity(code,"desc_"+code,"url_"+code));
+    public Observable<CurrencyInfoEntity> getRateInfo(String code) {
+        return Observable.just(new CurrencyInfoEntity(code,"desc_"+code,"url_"+code));
     }
 }

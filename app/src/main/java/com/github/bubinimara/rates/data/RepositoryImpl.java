@@ -2,6 +2,8 @@ package com.github.bubinimara.rates.data;
 
 import com.github.bubinimara.rates.data.mock.RateExchangeApiMock;
 import com.github.bubinimara.rates.data.mock.RateInfoApiMock;
+import com.github.bubinimara.rates.data.model.RateExchangeEntity;
+import com.github.bubinimara.rates.data.model.CurrencyInfoEntity;
 import com.github.bubinimara.rates.domain.repo.ExchangeRate;
 import com.github.bubinimara.rates.domain.repo.Repository;
 
@@ -20,7 +22,7 @@ public class RepositoryImpl implements Repository {
     }
 
     public interface RateInfoApi {
-        Observable<RateInfoEntity> getRateInfo(String code);
+        Observable<CurrencyInfoEntity> getRateInfo(String code);
     }
 
     private RateExchangeApi rateExchangeApi;
@@ -39,7 +41,7 @@ public class RepositoryImpl implements Repository {
         return rateExchangeApi.getExchangeRate(code)
                 .flatMapIterable(m->m)
                 .switchMap(rateExchangeEntity -> rateinfoApi.getRateInfo(rateExchangeEntity.getCurrency())
-                        .map(rateInfoEntity -> new ExchangeRate(rateExchangeEntity.getCurrency(),rateInfoEntity.getDescription(),rateExchangeEntity.getValue(),rateInfoEntity.getIconUrl())))
+                        .map(currencyInfoEntity -> new ExchangeRate(rateExchangeEntity.getCurrency(), currencyInfoEntity.getDescription(), rateExchangeEntity.getExchangeRate(), currencyInfoEntity.getIconUrl())))
                 .toList();
     }
 

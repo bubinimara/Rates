@@ -1,14 +1,24 @@
-package com.github.bubinimara.rates.data;
+package com.github.bubinimara.rates.data.model;
 
 /**
  * Created by davide.
+ * Currency info
  */
-public class RateInfoEntity {
+public class CurrencyInfoEntity {
+    /**
+     * Currency code
+     */
     private String currency;
+    /**
+     * Currency description
+     */
     private String description;
+    /**
+     * Currency icon url
+     */
     private String iconUrl;
 
-    public RateInfoEntity(String currency, String description, String iconUrl) {
+    public CurrencyInfoEntity(String currency, String description, String iconUrl) {
         this.currency = currency;
         this.description = description;
         this.iconUrl = iconUrl;

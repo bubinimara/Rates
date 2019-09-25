@@ -1,8 +1,7 @@
 package com.github.bubinimara.rates.data.mock;
 
-import com.github.bubinimara.rates.data.RateExchangeEntity;
+import com.github.bubinimara.rates.data.model.RateExchangeEntity;
 import com.github.bubinimara.rates.data.RepositoryImpl;
-import com.github.bubinimara.rates.data.utils.ThreadUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
