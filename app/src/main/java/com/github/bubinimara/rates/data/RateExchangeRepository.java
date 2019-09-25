@@ -9,7 +9,7 @@ import io.reactivex.Observable;
 /**
  * Created by davide.
  */
-public interface RateExchangeApi {
+public interface RateExchangeRepository {
     /**
      * Get the list of currencies exchange rate
      * Note that the currency passed as parameter have the exchange rate as 1

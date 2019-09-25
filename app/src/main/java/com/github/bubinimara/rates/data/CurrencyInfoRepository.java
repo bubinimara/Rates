@@ -7,7 +7,7 @@ import io.reactivex.Observable;
 /**
  * Created by davide.
  */
-public interface CurrencyInfoApi {
+public interface CurrencyInfoRepository {
     /**
      * get the currency info
      * @param code  the currency code

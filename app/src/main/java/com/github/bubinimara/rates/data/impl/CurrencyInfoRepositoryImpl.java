@@ -1,6 +1,6 @@
 package com.github.bubinimara.rates.data.impl;
 
-import com.github.bubinimara.rates.data.CurrencyInfoApi;
+import com.github.bubinimara.rates.data.CurrencyInfoRepository;
 import com.github.bubinimara.rates.data.model.CurrencyInfoEntity;
 
 import java.util.Currency;
@@ -10,7 +10,7 @@ import io.reactivex.Observable;
 /**
  * Created by davide.
  */
-class CurrencyInfoApiImpl implements CurrencyInfoApi {
+class CurrencyInfoRepositoryImpl implements CurrencyInfoRepository {
 
     private static final String BASE_IMAGE_URL = "https://raw.githubusercontent.com/transferwise/currency-flags/master/src/flags/";
 

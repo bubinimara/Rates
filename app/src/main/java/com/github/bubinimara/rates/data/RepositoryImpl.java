@@ -1,7 +1,7 @@
 package com.github.bubinimara.rates.data;
 
-import com.github.bubinimara.rates.data.mock.RateExchangeApiMock;
-import com.github.bubinimara.rates.data.mock.CurrencyInfoApiMock;
+import com.github.bubinimara.rates.data.mock.RateExchangeRepositoryMock;
+import com.github.bubinimara.rates.data.mock.CurrencyInfoRepositoryMock;
 import com.github.bubinimara.rates.domain.repo.ExchangeRate;
 import com.github.bubinimara.rates.domain.repo.Repository;
 
@@ -14,20 +14,20 @@ import io.reactivex.Single;
  */
 public class RepositoryImpl implements Repository {
 
-    private RateExchangeApi rateExchangeApi;
-    private CurrencyInfoApi rateinfoApi;
+    private RateExchangeRepository rateExchangeRepository;
+    private CurrencyInfoRepository rateinfoApi;
 
     public static RepositoryImpl createMockRepository(){
-        return new RepositoryImpl(new RateExchangeApiMock(),new CurrencyInfoApiMock());
+        return new RepositoryImpl(new RateExchangeRepositoryMock(),new CurrencyInfoRepositoryMock());
     }
 
-    public RepositoryImpl(RateExchangeApi rateExchangeApi, CurrencyInfoApi rateinfoApi) {
-        this.rateExchangeApi = rateExchangeApi;
+    public RepositoryImpl(RateExchangeRepository rateExchangeRepository, CurrencyInfoRepository rateinfoApi) {
+        this.rateExchangeRepository = rateExchangeRepository;
         this.rateinfoApi = rateinfoApi;
     }
 
     public Single<List<ExchangeRate>> getExchangeRate(String code){
-        return rateExchangeApi.getExchangeRate(code)
+        return rateExchangeRepository.getExchangeRate(code)
                 .flatMapIterable(m->m)
                 .switchMap(rateExchangeEntity -> rateinfoApi.getCurrencyInfo(rateExchangeEntity.getCurrency())
                         .map(currencyInfoEntity -> new ExchangeRate(rateExchangeEntity.getCurrency(), currencyInfoEntity.getDescription(), rateExchangeEntity.getExchangeRate(), currencyInfoEntity.getIconUrl())))
