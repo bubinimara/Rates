@@ -7,6 +7,8 @@ import com.github.bubinimara.rates.data.RepositoryImpl;
 import com.github.bubinimara.rates.domain.repo.ExchangeRate;
 import com.github.bubinimara.rates.domain.repo.Repository;
 
+import org.javamoney.moneta.Money;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +67,7 @@ public class RatesInteractor {
 
     /**
      * Calculate the value and map the result
-     * Should use Big*
+     *
      * @param exchangeRates
      * @param value
      * @return
@@ -73,7 +75,11 @@ public class RatesInteractor {
     private List<Rate> createRate(List<ExchangeRate> exchangeRates,double value) {
         List<Rate> result = new ArrayList<>(exchangeRates.size());
         for (ExchangeRate er : exchangeRates) {
-            result.add(new Rate(er.getCode(),er.getDescription(),er.getExchangeRate()*value,er.getIconUrl()));
+            double v = Money.of(er.getCode(), value)
+                    .multiply(er.getExchangeRate())
+                    .getNumber()
+                    .doubleValueExact();
+            result.add(new Rate(er.getCode(),er.getDescription(),v,er.getIconUrl()));
         }
         return result;
     }
