@@ -3,7 +3,6 @@ package com.github.bubinimara.rates.data.mock;
 import com.github.bubinimara.rates.data.RateExchangeEntity;
 import com.github.bubinimara.rates.data.RepositoryImpl;
 import com.github.bubinimara.rates.data.utils.ThreadUtils;
-import com.github.bubinimara.rates.domain.repo.ExchangeRate;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -20,7 +19,7 @@ public class RateExchangeApiMock implements RepositoryImpl.RateExchangeApi {
     public Observable<List<RateExchangeEntity>> getExchangeRate(String code) {
         LinkedHashSet<RateExchangeEntity> mockList = new LinkedHashSet<>();
         mockList.add(new RateExchangeEntity(code,1));
-        ThreadUtils.sleep(3);
+        //ThreadUtils.sleep(3);
         for (int i = 0; i < 10; i++) {
             String value = String.valueOf(Math.random());
             value = value.substring(0,6);

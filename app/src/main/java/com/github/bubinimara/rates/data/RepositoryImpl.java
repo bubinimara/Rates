@@ -26,14 +26,13 @@ public class RepositoryImpl implements Repository {
     private RateExchangeApi rateExchangeApi;
     private RateInfoApi rateinfoApi;
 
+    public static RepositoryImpl createMockRepository(){
+        return new RepositoryImpl(new RateExchangeApiMock(),new RateInfoApiMock());
+    }
+
     public RepositoryImpl(RateExchangeApi rateExchangeApi, RateInfoApi rateinfoApi) {
         this.rateExchangeApi = rateExchangeApi;
         this.rateinfoApi = rateinfoApi;
-    }
-
-    public RepositoryImpl() {
-        this.rateExchangeApi = new RateExchangeApiMock();
-        this.rateinfoApi = new RateInfoApiMock();
     }
 
     public Single<List<ExchangeRate>> getExchangeRate(String code){

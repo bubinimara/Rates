@@ -4,10 +4,11 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
+import com.github.bubinimara.rates.domain.Rate;
 import com.github.bubinimara.rates.domain.RatesInteractor;
-import com.github.bubinimara.rates.domain.repo.ExchangeRate;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class RatesViewModel extends ViewModel {
@@ -15,7 +16,6 @@ public class RatesViewModel extends ViewModel {
     private LiveData<List<RateModel>> ratesLiveData;
 
     private RatesInteractor ratesInteractor = new RatesInteractor();
-    private RateModel currentRate;
 
 
     public RatesViewModel() {
@@ -31,27 +31,31 @@ public class RatesViewModel extends ViewModel {
 
 
     private LiveData<List<RateModel>> getLiveData() {
-        return Transformations.map(ratesInteractor.getRatesLiveData(), input -> {
-            List<RateModel> rates = new ArrayList<>(input.size());
-            for (ExchangeRate er : input) {
-                rates.add(convertExchangeRateToRateModel(er));
+        return Transformations.map(ratesInteractor.getRatesLiveData(), RateModelMapper::createRateModel);
+    }
+
+    public static class RateModelMapper{
+        public static List<RateModel> createRateModel(Collection<Rate> rate){
+            List<RateModel> result = new ArrayList<>(rate.size());
+            for (Rate r :
+                    rate) {
+                result.add(createRateModel(r));
             }
-            return rates;
-        });
-
+            return result;
+        }
+        public static RateModel createRateModel(Rate rate){
+            return new RateModel(rate.getCurrency(),rate.getDescription(),String.valueOf(rate.getValue()),rate.getIconUrl());
+        }
     }
-
-    private RateModel convertExchangeRateToRateModel(ExchangeRate er) {
-        return new RateModel(er.getCode(),er.getDescription(), getRateValue(er),null);
-    }
-
-    private String getRateValue(ExchangeRate er) {
-        return (er.getExchangeRate())+" x " + currentRate.getValue();
-    }
-
 
     public LiveData<List<RateModel>> getRatesLiveData() {
         return ratesLiveData;
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        ratesInteractor.clear();
     }
 
     /**
@@ -60,7 +64,7 @@ public class RatesViewModel extends ViewModel {
      */
     public void onRateChanged(RateModel rateModel) {
         // todo: validate - check change
-        ratesInteractor.fetchRatesAtFixedTime(rateModel.getCode());
-        currentRate = rateModel;
+        ratesInteractor.fetchRatesAtFixedTime(rateModel.getCode(),Double.valueOf(rateModel.getValue()));
+        // todo: invalidate ui - show info that the data is loading
     }
 }

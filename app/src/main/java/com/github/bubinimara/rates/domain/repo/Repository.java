@@ -7,6 +7,6 @@ import io.reactivex.Single;
 /**
  * Created by davide.
  */
-interface Repository {
+public interface Repository {
     Single<List<ExchangeRate>> getExchangeRate(String code);
 }
