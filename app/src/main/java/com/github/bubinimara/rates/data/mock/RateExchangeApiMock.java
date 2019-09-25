@@ -1,7 +1,7 @@
 package com.github.bubinimara.rates.data.mock;
 
+import com.github.bubinimara.rates.data.RateExchangeApi;
 import com.github.bubinimara.rates.data.model.RateExchangeEntity;
-import com.github.bubinimara.rates.data.RepositoryImpl;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -12,7 +12,7 @@ import io.reactivex.Observable;
 /**
  * Created by davide.
  */
-public class RateExchangeApiMock implements RepositoryImpl.RateExchangeApi {
+public class RateExchangeApiMock implements RateExchangeApi {
 
     @Override
     public Observable<List<RateExchangeEntity>> getExchangeRate(String code) {
