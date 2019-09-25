@@ -1,5 +1,7 @@
 package com.github.bubinimara.rates.data;
 
+import com.github.bubinimara.rates.data.impl.CurrencyInfoRepositoryImpl;
+import com.github.bubinimara.rates.data.impl.RateExchangeRepositoryImpl;
 import com.github.bubinimara.rates.data.mock.RateExchangeRepositoryMock;
 import com.github.bubinimara.rates.data.mock.CurrencyInfoRepositoryMock;
 import com.github.bubinimara.rates.domain.repo.ExchangeRate;
@@ -19,6 +21,10 @@ public class RepositoryImpl implements Repository {
 
     public static RepositoryImpl createMockRepository(){
         return new RepositoryImpl(new RateExchangeRepositoryMock(),new CurrencyInfoRepositoryMock());
+    }
+
+    public static RepositoryImpl createRepository(){
+        return new RepositoryImpl(new RateExchangeRepositoryImpl(),new CurrencyInfoRepositoryImpl());
     }
 
     public RepositoryImpl(RateExchangeRepository rateExchangeRepository, CurrencyInfoRepository rateinfoApi) {

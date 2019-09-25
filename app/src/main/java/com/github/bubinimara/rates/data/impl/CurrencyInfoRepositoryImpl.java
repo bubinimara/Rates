@@ -10,7 +10,7 @@ import io.reactivex.Observable;
 /**
  * Created by davide.
  */
-class CurrencyInfoRepositoryImpl implements CurrencyInfoRepository {
+public class CurrencyInfoRepositoryImpl implements CurrencyInfoRepository {
 
     private static final String BASE_IMAGE_URL = "https://raw.githubusercontent.com/transferwise/currency-flags/master/src/flags/";
 
