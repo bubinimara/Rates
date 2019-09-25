@@ -46,6 +46,6 @@ public class RateExchangeRepositoryImpl implements RateExchangeRepository {
                         result.add(new RateExchangeEntity(key,v));
                     }
                     return (result);
-                });
+                }).toObservable();
     }
 }

@@ -1,6 +1,6 @@
 package com.github.bubinimara.rates.data.impl.net;
 
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
@@ -9,5 +9,5 @@ import retrofit2.http.Query;
  */
 public interface RateExchangeApi {
     @GET("latest")
-    Observable<RateExchangeNetModel> getRateExchange(@Query("base") String base);
+    Single<RateExchangeNetModel> getRateExchange(@Query("base") String base);
 }
