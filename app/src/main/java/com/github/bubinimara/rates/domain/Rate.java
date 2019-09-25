@@ -2,6 +2,7 @@ package com.github.bubinimara.rates.domain;
 
 /**
  * Created by davide.
+ * The already computed exchanged rate in base of a currency
  */
 public class Rate {
     private String currency;

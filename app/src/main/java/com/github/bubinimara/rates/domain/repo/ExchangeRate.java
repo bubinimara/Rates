@@ -11,11 +11,6 @@ public class ExchangeRate {
     private double exchangeRate;
     private String iconUrl;
 
-    public ExchangeRate(String code,double exchangeRate) {
-        this.code = code;
-        this.exchangeRate = exchangeRate;
-    }
-
     public ExchangeRate(String code, String description, double exchangeRate, String iconUrl) {
         this.code = code;
         this.description = description;
