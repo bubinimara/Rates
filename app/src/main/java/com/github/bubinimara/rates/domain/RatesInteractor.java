@@ -1,7 +1,5 @@
 package com.github.bubinimara.rates.domain;
 
-import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -9,11 +7,11 @@ import com.github.bubinimara.rates.data.RepositoryImpl;
 import com.github.bubinimara.rates.domain.repo.ExchangeRate;
 import com.github.bubinimara.rates.domain.repo.Repository;
 
+import org.javamoney.moneta.Money;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import javax.security.auth.login.LoginException;
 
 import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
@@ -63,14 +61,13 @@ public class RatesInteractor {
                     rates.postValue(exchangeRates);
                 }, throwable -> {
                     // todo:treat it
-                    Log.e("MYDEBUG", "fetchRates: ",throwable );
                 });
 
     }
 
     /**
      * Calculate the value and map the result
-     * Should use Big*
+     *
      * @param exchangeRates
      * @param value
      * @return
@@ -78,7 +75,11 @@ public class RatesInteractor {
     private List<Rate> createRate(List<ExchangeRate> exchangeRates,double value) {
         List<Rate> result = new ArrayList<>(exchangeRates.size());
         for (ExchangeRate er : exchangeRates) {
-            result.add(new Rate(er.getCode(),er.getDescription(),er.getExchangeRate()*value,er.getIconUrl()));
+            double v = Money.of(er.getCode(), value)
+                    .multiply(er.getExchangeRate())
+                    .getNumber()
+                    .doubleValueExact();
+            result.add(new Rate(er.getCode(),er.getDescription(),v,er.getIconUrl()));
         }
         return result;
     }
