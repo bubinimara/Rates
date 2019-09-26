@@ -55,5 +55,19 @@ public class RatesViewModel extends ViewModel {
         // todo: invalidate ui - show info that the data is loading
     }
 
+    public static class RatesViewModelProvider implements ViewModelProvider.Factory {
+
+        private RatesInteractor interactor;
+
+        public RatesViewModelProvider(RatesInteractor interactor) {
+            this.interactor = interactor;
+        }
+
+        @NonNull
+        @Override
+        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+            return (T) new RatesViewModel(interactor);
+        }
+    }
 
 }
