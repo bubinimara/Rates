@@ -1,5 +1,6 @@
 package com.github.bubinimara.rates.app;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,8 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.bubinimara.rates.R;
+import com.github.bubinimara.rates.RatesApp;
+import com.github.bubinimara.rates.app.model.RateModel;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,8 +33,18 @@ public class RatesFragment extends Fragment implements RatesAdapter.RateChangeLi
 
     RatesAdapter adapter;
 
+    @Inject
+    RatesViewModel.RatesViewModelProvider viewModelProvider;
+
     public static RatesFragment newInstance() {
         return new RatesFragment();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        RatesApp.getUiComponent(context)
+                .inject(this);
     }
 
     @Override
@@ -48,7 +63,7 @@ public class RatesFragment extends Fragment implements RatesAdapter.RateChangeLi
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mViewModel = ViewModelProviders.of(this).get(RatesViewModel.class);
+        mViewModel = ViewModelProviders.of(this,viewModelProvider).get(RatesViewModel.class);
         mViewModel.getRatesLiveData().observe(this,this::onDataChanged);
     }
 

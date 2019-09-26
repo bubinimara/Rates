@@ -1,5 +1,7 @@
 package com.github.bubinimara.rates.data;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.github.bubinimara.rates.data.impl.CurrencyInfoRepositoryImpl;
 import com.github.bubinimara.rates.data.impl.RateExchangeRepositoryImpl;
 import com.github.bubinimara.rates.data.mock.RateExchangeRepositoryMock;
@@ -19,12 +21,9 @@ public class RepositoryImpl implements Repository {
     private RateExchangeRepository rateExchangeRepository;
     private CurrencyInfoRepository rateinfoApi;
 
+    @VisibleForTesting
     public static RepositoryImpl createMockRepository(){
         return new RepositoryImpl(new RateExchangeRepositoryMock(),new CurrencyInfoRepositoryMock());
-    }
-
-    public static RepositoryImpl createRepository(){
-        return new RepositoryImpl(new RateExchangeRepositoryImpl(),new CurrencyInfoRepositoryImpl());
     }
 
     public RepositoryImpl(RateExchangeRepository rateExchangeRepository, CurrencyInfoRepository rateinfoApi) {

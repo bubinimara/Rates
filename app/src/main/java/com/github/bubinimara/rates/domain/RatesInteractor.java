@@ -26,20 +26,26 @@ import io.reactivex.schedulers.Schedulers;
  *
  */
 public class RatesInteractor {
-    private final static long TIMER_PERIOD = 1;
+    private static final String DEFAULT_CODE = "EUR";
+    private static final double DEFAULT_VALUE = 100;
+    private final static long TIMER_PERIOD = 1;// express as seconds
 
     private MutableLiveData<List<Rate>> rates;
     private final Repository repository;
     private Disposable disposable;
 
-    public RatesInteractor() {
+    public RatesInteractor(Repository repository) {
+        this.repository = repository;
         rates = new MutableLiveData<>();
-        this.repository = RepositoryImpl.createRepository();
     }
 
     public void fetchRatesAtFixedTime(final String code,final double value){
         clear();
         fetchRates(code,value);
+    }
+
+    public void fetchDefaultRateAtFixedTime(){
+        fetchRates(DEFAULT_CODE,DEFAULT_VALUE);
     }
 
     public void clear(){

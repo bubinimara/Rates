@@ -46,5 +46,10 @@ dependencies {
 
     implementation 'org.javamoney:moneta:0.8'
 
+    implementation 'com.google.dagger:dagger-android:2.22.1'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.22.1'
+
+
+
 
 }

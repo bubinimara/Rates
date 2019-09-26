@@ -1,4 +1,4 @@
-package com.github.bubinimara.rates.app;
+package com.github.bubinimara.rates.app.model;
 
 import androidx.annotation.NonNull;
 
