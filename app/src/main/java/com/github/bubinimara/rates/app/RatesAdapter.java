@@ -185,7 +185,9 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         void set(RateModel rate){
             code.setText(rate.getCode());
             desc.setText(rate.getDesc());
+
             if(getLayoutPosition()==0){
+                value.setText(rate.getValue());
                 enableTextChangeListener();
             }else{
                 disableTextChangeListener();
