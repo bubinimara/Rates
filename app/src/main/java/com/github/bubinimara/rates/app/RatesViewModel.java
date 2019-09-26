@@ -1,51 +1,38 @@
 package com.github.bubinimara.rates.app;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.github.bubinimara.rates.domain.Rate;
+import com.github.bubinimara.rates.app.model.RateModel;
+import com.github.bubinimara.rates.app.model.RateModelMapper;
 import com.github.bubinimara.rates.domain.RatesInteractor;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class RatesViewModel extends ViewModel {
 
     private LiveData<List<RateModel>> ratesLiveData;
+    private final RatesInteractor ratesInteractor;
 
-    private RatesInteractor ratesInteractor = new RatesInteractor();
-
-
+    // this will be removed
     public RatesViewModel() {
-        ratesLiveData = getLiveData();
-        initialFecthOfRates();
+        this(new RatesInteractor());
+
     }
 
-    private void initialFecthOfRates() {
-        // fetch .. etc
-        RateModel r = new RateModel("EUR", "", "1", null);
-        onRateChanged(r);
+    public RatesViewModel(RatesInteractor ratesInteractor) {
+        this.ratesInteractor = ratesInteractor;
+        initialize();
     }
 
-
-    private LiveData<List<RateModel>> getLiveData() {
-        return Transformations.map(ratesInteractor.getRatesLiveData(), RateModelMapper::createRateModel);
-    }
-
-    public static class RateModelMapper{
-        public static List<RateModel> createRateModel(Collection<Rate> rate){
-            List<RateModel> result = new ArrayList<>(rate.size());
-            for (Rate r :
-                    rate) {
-                result.add(createRateModel(r));
-            }
-            return result;
-        }
-        public static RateModel createRateModel(Rate rate){
-            return new RateModel(rate.getCurrency(),rate.getDescription(),String.valueOf(rate.getValue()),rate.getIconUrl());
-        }
+    private void initialize() {
+        // fetch with default values
+        ratesInteractor.fetchDefaultRateAtFixedTime();
+        // the data ( can be replaced by inline function )
+        ratesLiveData = Transformations.map(ratesInteractor.getRatesLiveData(), RateModelMapper::createRateModel);
     }
 
     public LiveData<List<RateModel>> getRatesLiveData() {
@@ -67,4 +54,6 @@ public class RatesViewModel extends ViewModel {
         ratesInteractor.fetchRatesAtFixedTime(rateModel.getCode(),Double.valueOf(rateModel.getValue()));
         // todo: invalidate ui - show info that the data is loading
     }
+
+
 }

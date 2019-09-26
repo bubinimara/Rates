@@ -2,7 +2,7 @@ package com.github.bubinimara.rates.app.utils;
 
 import androidx.recyclerview.widget.DiffUtil;
 
-import com.github.bubinimara.rates.app.RateModel;
+import com.github.bubinimara.rates.app.model.RateModel;
 
 import java.util.List;
 

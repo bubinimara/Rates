@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.bubinimara.rates.R;
+import com.github.bubinimara.rates.app.model.RateModel;
 
 import java.util.List;
 

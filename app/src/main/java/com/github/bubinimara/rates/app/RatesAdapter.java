@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.bubinimara.rates.R;
+import com.github.bubinimara.rates.app.model.RateModel;
 import com.github.bubinimara.rates.app.utils.EmptyTextWatcher;
 import com.github.bubinimara.rates.app.utils.RatesDiffUtils;
 
