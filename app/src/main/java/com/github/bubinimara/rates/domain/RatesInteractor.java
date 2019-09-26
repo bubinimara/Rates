@@ -34,9 +34,9 @@ public class RatesInteractor {
     private final Repository repository;
     private Disposable disposable;
 
-    public RatesInteractor() {
+    public RatesInteractor(Repository repository) {
+        this.repository = repository;
         rates = new MutableLiveData<>();
-        this.repository = RepositoryImpl.createRepository();
     }
 
     public void fetchRatesAtFixedTime(final String code,final double value){

@@ -17,12 +17,6 @@ public class RatesViewModel extends ViewModel {
     private LiveData<List<RateModel>> ratesLiveData;
     private final RatesInteractor ratesInteractor;
 
-    // this will be removed
-    public RatesViewModel() {
-        this(new RatesInteractor());
-
-    }
-
     public RatesViewModel(RatesInteractor ratesInteractor) {
         this.ratesInteractor = ratesInteractor;
         initialize();

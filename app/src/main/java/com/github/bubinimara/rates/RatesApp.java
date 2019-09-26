@@ -1,6 +1,9 @@
 package com.github.bubinimara.rates;
 
 import android.app.Application;
+import android.content.Context;
+
+import androidx.annotation.NonNull;
 
 import com.github.bubinimara.rates.di.component.ApplicationComponent;
 import com.github.bubinimara.rates.di.component.DaggerApplicationComponent;
@@ -14,6 +17,11 @@ import com.github.bubinimara.rates.di.module.ApplicationModule;
 public class RatesApp extends Application {
 
     private UiComponent uiComponent;
+
+    public static UiComponent getUiComponent(@NonNull Context context) {
+        RatesApp app = (RatesApp) context.getApplicationContext();
+        return app.getUiComponent();
+    }
 
     @Override
     public void onCreate() {
