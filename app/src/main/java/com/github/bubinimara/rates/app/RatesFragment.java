@@ -45,13 +45,15 @@ public class RatesFragment extends Fragment implements RatesAdapter.RateChangeLi
         super.onAttach(context);
         RatesApp.getUiComponent(context)
                 .inject(this);
+
+        adapter = new RatesAdapter(context.getApplicationContext());
+        adapter.setRateChangeListener(this);
+
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        adapter = new RatesAdapter(getContext().getApplicationContext());
-        adapter.setRateChangeListener(this);
     }
 
     @Override
