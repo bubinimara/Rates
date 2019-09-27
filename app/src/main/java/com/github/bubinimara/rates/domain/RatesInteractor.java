@@ -3,7 +3,6 @@ package com.github.bubinimara.rates.domain;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.github.bubinimara.rates.data.RepositoryImpl;
 import com.github.bubinimara.rates.domain.repo.ExchangeRate;
 import com.github.bubinimara.rates.domain.repo.Repository;
 
@@ -12,6 +11,9 @@ import org.javamoney.moneta.Money;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javax.money.Monetary;
+import javax.money.MonetaryAmount;
 
 import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
@@ -81,10 +83,12 @@ public class RatesInteractor {
     private List<Rate> createRate(List<ExchangeRate> exchangeRates,double value) {
         List<Rate> result = new ArrayList<>(exchangeRates.size());
         for (ExchangeRate er : exchangeRates) {
-            double v = Money.of(er.getCode(), value)
+            double v = Money.of(value,er.getCode())
                     .multiply(er.getExchangeRate())
+                    .with(Monetary.getDefaultRounding())
                     .getNumber()
                     .doubleValueExact();
+            
             result.add(new Rate(er.getCode(),er.getDescription(),v,er.getIconUrl()));
         }
         return result;
