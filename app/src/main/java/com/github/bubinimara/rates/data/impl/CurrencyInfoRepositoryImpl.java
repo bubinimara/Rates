@@ -25,7 +25,7 @@ public class CurrencyInfoRepositoryImpl implements CurrencyInfoRepository {
      * https://github.com/transferwise/currency-flags
      */
     private String getCurrencyImageUrl(String code) {
-        return BASE_IMAGE_URL+code+".png";
+        return BASE_IMAGE_URL+code.toLowerCase()+".png";
     }
 
     private String getCurrencyDescription(String code) {

@@ -2,16 +2,20 @@ package com.github.bubinimara.rates.app;
 
 import android.content.Context;
 import android.text.Editable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.github.bubinimara.rates.R;
 import com.github.bubinimara.rates.app.model.RateModel;
 import com.github.bubinimara.rates.app.utils.EmptyTextWatcher;
@@ -163,6 +167,8 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         TextView desc;
         @BindView(R.id.et_value)
         EditText value;
+        @BindView(R.id.imageView)
+        ImageView imageView;
 
         @NonNull
         private final Listener listener;
@@ -193,6 +199,10 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
                 disableTextChangeListener();
                 value.setText(rate.getValue());
             }
+
+            Glide.with(itemView).load(rate.getIcon())
+                    .apply(RequestOptions.circleCropTransform())
+                    .into(imageView);
         }
 
         private void disableTextChangeListener() {
