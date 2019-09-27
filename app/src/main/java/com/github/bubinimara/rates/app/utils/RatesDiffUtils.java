@@ -48,7 +48,8 @@ public class RatesDiffUtils extends DiffUtil.Callback {
     public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
         RateModel newItem = getNewItem(newItemPosition);
         RateModel oldItem = getOldItem(oldItemPosition);
-        return newItem.areContentsTheSame(oldItem);
+        //return newItem.areContentsTheSame(oldItem);
+        return true;
     }
 
 }

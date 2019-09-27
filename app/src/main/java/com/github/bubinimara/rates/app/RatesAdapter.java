@@ -2,7 +2,6 @@ package com.github.bubinimara.rates.app;
 
 import android.content.Context;
 import android.text.Editable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,11 +24,16 @@ import com.github.bubinimara.rates.app.utils.RatesDiffUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.PublishSubject;
 
 /**
  * Created by davide.
@@ -50,6 +56,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         layoutInflater = LayoutInflater.from(context);
         rates = Collections.synchronizedList(new ArrayList<>());
         holderListener = createHolderListener();
+        setHasStableIds(true);
     }
 
     protected Holder.Listener createHolderListener() {
@@ -98,8 +105,36 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         holder.set(getItem(position));
     }
 
+    HashMap<RateModel, PublishSubject<String>> observableHashMap = new HashMap<>();
+
+    private PublishSubject<String> getObservable(int position) {
+        return observableHashMap.get(getItem(position));
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull Holder holder) {
+        super.onViewRecycled(holder);
+    }
+
+    @Override
+    public void onViewAttachedToWindow(@NonNull Holder holder) {
+        super.onViewAttachedToWindow(holder);
+        holder.observerValue(getObservable(holder.getAdapterPosition()));
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull Holder holder) {
+        super.onViewDetachedFromWindow(holder);
+        holder.dispose();
+    }
+
     protected RateModel getItem(int position){
         return rates.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return getItem(position).getCode().hashCode();
     }
 
     @Override
@@ -123,13 +158,17 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
     public void updateRates(@NonNull List<RateModel> rateModels) {
         if(rates.isEmpty()){
             rates.addAll(rateModels);
+            addValuesObservable(rateModels);
             notifyItemRangeInserted(0,rates.size());
         }else{
+
             List<RateModel> newList = new ArrayList<>(rateModels.size());
             //todo: -- remove --
             // temporary hack to prevent not update the first item
             // !? the first item should be treated as special ?!
             rateModels.remove(getItem(0));
+            //observableHashMap.remove(getItem(0));
+
             newList.add(getItem(0));
 
             // update current items at the same position
@@ -137,6 +176,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
                 int i = rateModels.indexOf(r);
                 if(i>=0){// if contains
                     newList.add(rateModels.get(i));
+                    observableHashMap.get(rateModels.get(i)).onNext(rateModels.get(i).getValue());
                     rateModels.remove(i);
                 }
             }
@@ -154,7 +194,20 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         }
     }
 
-    static class Holder extends RecyclerView.ViewHolder {
+    private void addValuesObservable(List<RateModel> rateModels) {
+        for (RateModel rm :
+                rateModels) {
+            observableHashMap.put(rm, PublishSubject.create());
+        }
+    }
+
+    static class Holder extends RecyclerView.ViewHolder implements LifecycleOwner {
+
+        @NonNull
+        @Override
+        public Lifecycle getLifecycle() {
+            return null;
+        }
 
         interface Listener{
             void onClick(int adapterPosition);
@@ -170,12 +223,32 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         @BindView(R.id.imageView)
         ImageView imageView;
 
+        private Disposable disposable;
+
+        public void observerValue(Observable<String> rateValue){
+            if(rateValue == null)
+                return;
+
+            disposable = rateValue.observeOn(AndroidSchedulers.mainThread())
+            .subscribe(v->{
+                if(getLayoutPosition()!=0)
+                value.setText(v);
+            });
+        }
+
+        public void dispose(){
+            if(disposable!=null && !disposable.isDisposed()){
+                disposable.dispose();
+            }
+        }
+
         @NonNull
         private final Listener listener;
 
         private final EmptyTextWatcher textWatcher = new EmptyTextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
+                if(getLayoutPosition()==0)
                 listener.onValueChanged(s.toString());
             }
 
@@ -185,7 +258,6 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
             super(itemView);
             this.listener = listener;
             ButterKnife.bind(this,itemView);
-
         }
 
         void set(RateModel rate){
@@ -226,5 +298,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
                 enableTextChangeListener();
             }
         }
+
+
     }
 }
