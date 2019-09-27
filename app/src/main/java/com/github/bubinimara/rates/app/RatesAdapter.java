@@ -33,6 +33,7 @@ import butterknife.OnClick;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 
 /**
@@ -48,15 +49,18 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         void onRateChange(RateModel rateModel);
     }
     private final @NonNull LayoutInflater layoutInflater;
-    private final @NonNull  List<RateModel> rates;
     private final @NonNull Holder.Listener holderListener;
+    // The data
+    private final @NonNull List<RateModel> rates;
+    // The text value
+    private final @NonNull HashMap<RateModel, BehaviorSubject<String>> observableHashMap;
     private RateChangeListener rateChangeListener;
 
     public RatesAdapter(@NonNull Context context) {
         layoutInflater = LayoutInflater.from(context);
         rates = Collections.synchronizedList(new ArrayList<>());
+        observableHashMap = new HashMap<>();
         holderListener = createHolderListener();
-        setHasStableIds(true);
     }
 
     protected Holder.Listener createHolderListener() {
@@ -105,21 +109,32 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         holder.set(getItem(position));
     }
 
-    HashMap<RateModel, PublishSubject<String>> observableHashMap = new HashMap<>();
-
-    private PublishSubject<String> getObservable(int position) {
-        return observableHashMap.get(getItem(position));
+    /**
+     * Remove not used Observables
+     */
+    private void removeUnusedObservables() {
+        //todo: not implemented yet
     }
 
-    @Override
-    public void onViewRecycled(@NonNull Holder holder) {
-        super.onViewRecycled(holder);
+    /**
+     * Create or return the observable associated to the rate passed as parameter
+     * @param rateModel the rate model
+     * @return the Observable
+     */
+    private BehaviorSubject<String> getOrCreateObservable(RateModel rateModel) {
+        BehaviorSubject<String> subject = observableHashMap.get(rateModel);
+        if(subject==null){
+            subject = BehaviorSubject.create();
+        }
+        observableHashMap.put(rateModel,subject);
+        return subject;
     }
+
 
     @Override
     public void onViewAttachedToWindow(@NonNull Holder holder) {
         super.onViewAttachedToWindow(holder);
-        holder.observerValue(getObservable(holder.getAdapterPosition()));
+        holder.observerValue(getOrCreateObservable(getItem(holder.getAdapterPosition())));
     }
 
     @Override
@@ -130,11 +145,6 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
 
     protected RateModel getItem(int position){
         return rates.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return getItem(position).getCode().hashCode();
     }
 
     @Override
@@ -158,7 +168,6 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
     public void updateRates(@NonNull List<RateModel> rateModels) {
         if(rates.isEmpty()){
             rates.addAll(rateModels);
-            addValuesObservable(rateModels);
             notifyItemRangeInserted(0,rates.size());
         }else{
 
@@ -167,8 +176,6 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
             // temporary hack to prevent not update the first item
             // !? the first item should be treated as special ?!
             rateModels.remove(getItem(0));
-            //observableHashMap.remove(getItem(0));
-
             newList.add(getItem(0));
 
             // update current items at the same position
@@ -176,7 +183,8 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
                 int i = rateModels.indexOf(r);
                 if(i>=0){// if contains
                     newList.add(rateModels.get(i));
-                    observableHashMap.get(rateModels.get(i)).onNext(rateModels.get(i).getValue());
+                    getOrCreateObservable(rateModels.get(i))
+                            .onNext(rateModels.get(i).getValue());
                     rateModels.remove(i);
                 }
             }
@@ -190,16 +198,12 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
 
             rates.clear();
             rates.addAll(newList);
+            removeUnusedObservables();
             diffResult.dispatchUpdatesTo(this);
         }
     }
 
-    private void addValuesObservable(List<RateModel> rateModels) {
-        for (RateModel rm :
-                rateModels) {
-            observableHashMap.put(rm, PublishSubject.create());
-        }
-    }
+
 
     static class Holder extends RecyclerView.ViewHolder implements LifecycleOwner {
 
