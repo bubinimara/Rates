@@ -1,5 +1,7 @@
 package com.github.bubinimara.rates.app;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Transformations;
@@ -14,7 +16,6 @@ import java.util.List;
 
 public class RatesViewModel extends ViewModel {
 
-    private LiveData<List<RateModel>> ratesLiveData;
     private final RatesInteractor ratesInteractor;
 
     public RatesViewModel(RatesInteractor ratesInteractor) {
@@ -25,12 +26,10 @@ public class RatesViewModel extends ViewModel {
     private void initialize() {
         // fetch with default values
         ratesInteractor.fetchDefaultRateAtFixedTime();
-        // the data ( can be replaced by inline function )
-        ratesLiveData = Transformations.map(ratesInteractor.getRatesLiveData(), RateModelMapper::createRateModel);
     }
 
     public LiveData<List<RateModel>> getRatesLiveData() {
-        return ratesLiveData;
+        return Transformations.map(ratesInteractor.getRatesLiveData(), RateModelMapper::createRateModel);
     }
 
     @Override

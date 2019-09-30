@@ -2,7 +2,6 @@ package com.github.bubinimara.rates.app;
 
 import android.content.Context;
 import android.text.Editable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,11 +24,17 @@ import com.github.bubinimara.rates.app.utils.RatesDiffUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
 
 /**
  * Created by davide.
@@ -42,13 +49,17 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         void onRateChange(RateModel rateModel);
     }
     private final @NonNull LayoutInflater layoutInflater;
-    private final @NonNull  List<RateModel> rates;
     private final @NonNull Holder.Listener holderListener;
+    // The data
+    private final @NonNull List<RateModel> rates;
+    // The text value
+    private final @NonNull HashMap<RateModel, BehaviorSubject<String>> observableHashMap;
     private RateChangeListener rateChangeListener;
 
     public RatesAdapter(@NonNull Context context) {
         layoutInflater = LayoutInflater.from(context);
         rates = Collections.synchronizedList(new ArrayList<>());
+        observableHashMap = new HashMap<>();
         holderListener = createHolderListener();
     }
 
@@ -98,6 +109,40 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         holder.set(getItem(position));
     }
 
+    /**
+     * Remove not used Observables
+     */
+    private void removeUnusedObservables() {
+        //todo: not implemented yet
+    }
+
+    /**
+     * Create or return the observable associated to the rate passed as parameter
+     * @param rateModel the rate model
+     * @return the Observable
+     */
+    private BehaviorSubject<String> getOrCreateObservable(RateModel rateModel) {
+        BehaviorSubject<String> subject = observableHashMap.get(rateModel);
+        if(subject==null){
+            subject = BehaviorSubject.create();
+        }
+        observableHashMap.put(rateModel,subject);
+        return subject;
+    }
+
+
+    @Override
+    public void onViewAttachedToWindow(@NonNull Holder holder) {
+        super.onViewAttachedToWindow(holder);
+        holder.observerValue(getOrCreateObservable(getItem(holder.getAdapterPosition())));
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(@NonNull Holder holder) {
+        super.onViewDetachedFromWindow(holder);
+        holder.dispose();
+    }
+
     protected RateModel getItem(int position){
         return rates.get(position);
     }
@@ -125,6 +170,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
             rates.addAll(rateModels);
             notifyItemRangeInserted(0,rates.size());
         }else{
+
             List<RateModel> newList = new ArrayList<>(rateModels.size());
             //todo: -- remove --
             // temporary hack to prevent not update the first item
@@ -137,6 +183,8 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
                 int i = rateModels.indexOf(r);
                 if(i>=0){// if contains
                     newList.add(rateModels.get(i));
+                    getOrCreateObservable(rateModels.get(i))
+                            .onNext(rateModels.get(i).getValue());
                     rateModels.remove(i);
                 }
             }
@@ -150,11 +198,20 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
 
             rates.clear();
             rates.addAll(newList);
+            removeUnusedObservables();
             diffResult.dispatchUpdatesTo(this);
         }
     }
 
-    static class Holder extends RecyclerView.ViewHolder {
+
+
+    static class Holder extends RecyclerView.ViewHolder implements LifecycleOwner {
+
+        @NonNull
+        @Override
+        public Lifecycle getLifecycle() {
+            return null;
+        }
 
         interface Listener{
             void onClick(int adapterPosition);
@@ -170,12 +227,32 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         @BindView(R.id.imageView)
         ImageView imageView;
 
+        private Disposable disposable;
+
+        public void observerValue(Observable<String> rateValue){
+            if(rateValue == null)
+                return;
+
+            disposable = rateValue.observeOn(AndroidSchedulers.mainThread())
+            .subscribe(v->{
+                if(getLayoutPosition()!=0)
+                value.setText(v);
+            });
+        }
+
+        public void dispose(){
+            if(disposable!=null && !disposable.isDisposed()){
+                disposable.dispose();
+            }
+        }
+
         @NonNull
         private final Listener listener;
 
         private final EmptyTextWatcher textWatcher = new EmptyTextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
+                if(getLayoutPosition()==0)
                 listener.onValueChanged(s.toString());
             }
 
@@ -185,7 +262,6 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
             super(itemView);
             this.listener = listener;
             ButterKnife.bind(this,itemView);
-
         }
 
         void set(RateModel rate){
@@ -226,5 +302,7 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
                 enableTextChangeListener();
             }
         }
+
+
     }
 }
