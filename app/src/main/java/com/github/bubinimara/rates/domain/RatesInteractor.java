@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.money.Monetary;
-import javax.money.MonetaryAmount;
 
 import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
@@ -23,9 +22,6 @@ import io.reactivex.schedulers.Schedulers;
  * Created by davide.
  * like GetRatesUseCase and calculate
  * Note: A good approach will be to separate the task to fetch and the task to compute the value in two different classes
- *
- * todo: add option ( in repository ) to not update when change only the value, like get from cache and then update
- *
  */
 public class RatesInteractor {
     private static final String DEFAULT_CODE = "EUR";
@@ -35,6 +31,7 @@ public class RatesInteractor {
     private MutableLiveData<List<Rate>> rates;
     private final Repository repository;
     private Disposable disposable;
+    private List<ExchangeRate> oldExchangeRates;
 
     public RatesInteractor(Repository repository) {
         this.repository = repository;
@@ -55,15 +52,20 @@ public class RatesInteractor {
             disposable.dispose();
         }
     }
+
     /**
      * built in cold observable and backpressure
      * @param code the currency code
      * @param value the currency value
      */
     protected void fetchRates(String code,double value){
+        sendLastCodeIfPossible(code, value);
         disposable = Flowable.interval(0, TIMER_PERIOD, TimeUnit.SECONDS)
                 .flatMap(t -> repository.getExchangeRate(code).toFlowable())
-                .map(exchangeRates -> createRate(exchangeRates,value))
+                .map(exchangeRates -> {
+                    this.oldExchangeRates = exchangeRates;
+                    return createRate(exchangeRates, value);
+                })
                 .subscribeOn(Schedulers.io())
                 .subscribe(exchangeRates -> {
                     rates.postValue(exchangeRates);
@@ -71,6 +73,15 @@ public class RatesInteractor {
                     // todo:treat it
                 });
 
+    }
+
+    private void sendLastCodeIfPossible(String code, double value) {
+        if(oldExchangeRates!=null && oldExchangeRates.get(0)!=null && oldExchangeRates.get(0).getCode().equals(code)){
+            rates.setValue(createRate(oldExchangeRates,value));
+        }else {
+            // todo: send special event say that loading
+            //rates.setValue(new ArrayList<>()); // for data integrity
+        }
     }
 
     /**
