@@ -2,10 +2,8 @@ package com.github.bubinimara.rates.data;
 
 import androidx.annotation.VisibleForTesting;
 
-import com.github.bubinimara.rates.data.impl.CurrencyInfoRepositoryImpl;
-import com.github.bubinimara.rates.data.impl.RateExchangeRepositoryImpl;
-import com.github.bubinimara.rates.data.mock.RateExchangeRepositoryMock;
 import com.github.bubinimara.rates.data.mock.CurrencyInfoRepositoryMock;
+import com.github.bubinimara.rates.data.mock.RateExchangeRepositoryMock;
 import com.github.bubinimara.rates.domain.repo.ExchangeRate;
 import com.github.bubinimara.rates.domain.repo.Repository;
 
