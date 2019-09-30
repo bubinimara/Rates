@@ -43,9 +43,14 @@ public class RatesViewModel extends ViewModel {
      * @param rateModel - the new rate value
      */
     public void onRateChanged(RateModel rateModel) {
-        // todo: validate - check change
-        ratesInteractor.fetchRatesAtFixedTime(rateModel.getCode(),Double.valueOf(rateModel.getValue()));
-        // todo: invalidate ui - show info that the data is loading
+        Double aDouble = null;
+        try {
+            aDouble = Double.valueOf(rateModel.getValue());
+        } catch (NumberFormatException e) {
+            aDouble = 1.0;
+            // todo: show error in ui
+        }
+        ratesInteractor.fetchRatesAtFixedTime(rateModel.getCode(), aDouble);
     }
 
     public static class RatesViewModelProvider implements ViewModelProvider.Factory {
