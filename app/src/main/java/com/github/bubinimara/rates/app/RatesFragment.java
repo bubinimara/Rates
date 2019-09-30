@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,7 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.bubinimara.rates.R;
 import com.github.bubinimara.rates.RatesApp;
+import com.github.bubinimara.rates.app.model.ErrorModel;
 import com.github.bubinimara.rates.app.model.RateModel;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
@@ -30,6 +33,9 @@ public class RatesFragment extends Fragment implements RatesAdapter.RateChangeLi
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
+
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
 
     RatesAdapter adapter;
 
@@ -67,6 +73,39 @@ public class RatesFragment extends Fragment implements RatesAdapter.RateChangeLi
         super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(this,viewModelProvider).get(RatesViewModel.class);
         mViewModel.getRatesLiveData().observe(this,this::onDataChanged);
+        mViewModel.isLoadingLiveData().observe(this,this::isLoading);
+        mViewModel.getErrorLiveData().observe(this,this::onError);
+    }
+
+    private void onError(ErrorModel errorModel) {
+        if(errorModel.isHandled()){
+            // already handled
+            return;
+        }
+        switch (errorModel.getError()){
+            case NETWORK:
+                getString(R.string.app_name);
+                Snackbar.make(progressBar,R.string.error_network,Snackbar.LENGTH_INDEFINITE)
+                        .setAction(R.string.btn_retry, v -> {
+                            mViewModel.onRetryCurrentRate(adapter.getCurrentRate());
+                            errorModel.markAsHandled();
+                        })
+                        .show();
+                break;
+            case INVALID_USER_INPUT_VALUE:
+                errorModel.markAsHandled();
+                Snackbar.make(progressBar,R.string.error_invalid_user_input_value,Snackbar.LENGTH_SHORT)
+                        .show();
+                break;
+        }
+    }
+
+    private void isLoading(Boolean isLoading) {
+        if(isLoading == null) {
+            return;
+        }
+        //(adapter.setIsLoading(isLoading)) // can display items in gray for example
+        progressBar.setVisibility(isLoading?View.VISIBLE:View.INVISIBLE);
     }
 
     @Override

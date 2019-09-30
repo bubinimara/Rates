@@ -29,6 +29,9 @@ public class RatesInteractor {
     private final static long TIMER_PERIOD = 1;// express as seconds
 
     private MutableLiveData<List<Rate>> rates;
+    private MutableLiveData<Boolean> loading;
+    private MutableLiveData<Throwable> error;
+
     private final Repository repository;
     private Disposable disposable;
     private List<ExchangeRate> oldExchangeRates;
@@ -36,6 +39,8 @@ public class RatesInteractor {
     public RatesInteractor(Repository repository) {
         this.repository = repository;
         rates = new MutableLiveData<>();
+        loading = new MutableLiveData<>();
+        error = new MutableLiveData<>();
     }
 
     public void fetchRatesAtFixedTime(final String code,final double value){
@@ -61,7 +66,9 @@ public class RatesInteractor {
     protected void fetchRates(String code,double value){
         sendLastCodeIfPossible(code, value);
         disposable = Flowable.interval(0, TIMER_PERIOD, TimeUnit.SECONDS)
-                .flatMap(t -> repository.getExchangeRate(code).toFlowable())
+                .flatMap(t -> repository.getExchangeRate(code)
+                        .toFlowable()
+                        .doOnComplete(()->loading.postValue(false)))
                 .map(exchangeRates -> {
                     this.oldExchangeRates = exchangeRates;
                     return createRate(exchangeRates, value);
@@ -70,7 +77,8 @@ public class RatesInteractor {
                 .subscribe(exchangeRates -> {
                     rates.postValue(exchangeRates);
                 }, throwable -> {
-                    // todo:treat it
+                    error.postValue(throwable);
+                    clear();
                 });
 
     }
@@ -79,8 +87,7 @@ public class RatesInteractor {
         if(oldExchangeRates!=null && oldExchangeRates.get(0)!=null && oldExchangeRates.get(0).getCode().equals(code)){
             rates.setValue(createRate(oldExchangeRates,value));
         }else {
-            // todo: send special event say that loading
-            //rates.setValue(new ArrayList<>()); // for data integrity
+            loading.postValue(true);
         }
     }
 
@@ -108,4 +115,13 @@ public class RatesInteractor {
     public LiveData<List<Rate>> getRatesLiveData(){
         return rates;
     }
+
+    public MutableLiveData<Boolean> isLoadingLiveData() {
+        return loading;
+    }
+
+    public MutableLiveData<Throwable> getErrorLiveData() {
+        return error;
+    }
+
 }
