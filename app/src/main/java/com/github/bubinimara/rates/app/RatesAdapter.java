@@ -205,11 +205,6 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         }
     }
 
-    public RateModel getCurrentRate() {
-        return rates.isEmpty()?null:rates.get(0);
-    }
-
-
     static class Holder extends RecyclerView.ViewHolder  {
 
         interface Listener{

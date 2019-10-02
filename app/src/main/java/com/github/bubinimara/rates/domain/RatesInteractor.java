@@ -34,13 +34,24 @@ public class RatesInteractor {
 
     private final Repository repository;
     private Disposable disposable;
+
     private List<ExchangeRate> oldExchangeRates;
+    private String currentCode;
+    private double currentValue;
 
     public RatesInteractor(Repository repository) {
         this.repository = repository;
+        this.currentCode = DEFAULT_CODE;
+        this.currentValue = DEFAULT_VALUE;
+
         rates = new MutableLiveData<>();
         loading = new MutableLiveData<>();
         error = new MutableLiveData<>();
+    }
+
+    public void retryLastValue() {
+        clear();
+        fetchRates(currentCode,currentValue);
     }
 
     public void fetchRatesAtFixedTime(final String code,final double value){
@@ -59,16 +70,22 @@ public class RatesInteractor {
     }
 
     /**
+     * fetch rates
      * built in cold observable and backpressure
+     *
      * @param code the currency code
      * @param value the currency value
      */
-    protected void fetchRates(String code,double value){
+    protected synchronized void fetchRates(String code,double value){
+        this.currentCode = code;
+        this.currentValue = value;
+
         sendLastCodeIfPossible(code, value);
         disposable = Flowable.interval(0, TIMER_PERIOD, TimeUnit.SECONDS)
                 .flatMap(t -> repository.getExchangeRate(code)
                         .toFlowable()
-                        .doOnComplete(()->loading.postValue(false)))
+                        )
+                .doOnEach((e)->loading.postValue(false))
                 .map(exchangeRates -> {
                     this.oldExchangeRates = exchangeRates;
                     return createRate(exchangeRates, value);
@@ -78,13 +95,14 @@ public class RatesInteractor {
                     rates.postValue(exchangeRates);
                 }, throwable -> {
                     error.postValue(throwable);
-                    clear();
+                    clear(); // stop current
                 });
 
     }
 
     private void sendLastCodeIfPossible(String code, double value) {
         if(oldExchangeRates!=null && oldExchangeRates.get(0)!=null && oldExchangeRates.get(0).getCode().equals(code)){
+            loading.postValue(false);
             rates.setValue(createRate(oldExchangeRates,value));
         }else {
             loading.postValue(true);

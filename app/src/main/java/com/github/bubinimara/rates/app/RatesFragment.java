@@ -87,7 +87,7 @@ public class RatesFragment extends Fragment implements RatesAdapter.RateChangeLi
                 getString(R.string.app_name);
                 Snackbar.make(progressBar,R.string.error_network,Snackbar.LENGTH_INDEFINITE)
                         .setAction(R.string.btn_retry, v -> {
-                            mViewModel.onRetryCurrentRate(adapter.getCurrentRate());
+                            mViewModel.onRetryCurrentRate();
                             errorModel.markAsHandled();
                         })
                         .show();

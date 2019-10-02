@@ -52,13 +52,8 @@ public class RatesViewModel extends ViewModel {
         ratesInteractor.clear();
     }
 
-    public void onRetryCurrentRate(@Nullable RateModel currentRate) {
-        //rateInteractor.retryLastValue();
-        if(currentRate == null){
-            ratesInteractor.fetchDefaultRateAtFixedTime();
-        }else{
-            onRateChanged(currentRate);
-        }
+    public void onRetryCurrentRate() {
+        ratesInteractor.retryLastValue();
     }
 
     /**
