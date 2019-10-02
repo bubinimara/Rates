@@ -1,7 +1,6 @@
 package com.github.bubinimara.rates.app;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.Transformations;
@@ -16,8 +15,6 @@ import com.github.bubinimara.rates.domain.RatesInteractor;
 import java.util.List;
 
 public class RatesViewModel extends ViewModel {
-    // max number of allowed character for input value
-    private final double MAX_ALLOWED_LENGTH_VALUE = 7;
 
     private final RatesInteractor ratesInteractor;
     private MediatorLiveData<ErrorModel> errorLiveData;
@@ -31,7 +28,17 @@ public class RatesViewModel extends ViewModel {
     private void initialize() {
         // fetch with default values
         ratesInteractor.fetchDefaultRateAtFixedTime();
-        errorLiveData.addSource(ratesInteractor.getErrorLiveData(),(t)->errorLiveData.postValue(new ErrorModel(ErrorModel.Error.NETWORK)));
+        // errors
+        errorLiveData.addSource(ratesInteractor.getErrorLiveData(),(t)-> {
+            switch (t.getError()){
+                case NETWORK:
+                    errorLiveData.postValue(new ErrorModel(ErrorModel.Error.NETWORK));
+                    break;
+                case INVALID_USER_INPUT_VALUE:
+                    errorLiveData.postValue(new ErrorModel(ErrorModel.Error.INVALID_USER_INPUT_VALUE));
+                    break;
+            }
+        });
     }
 
     public LiveData<List<RateModel>> getRatesLiveData() {
@@ -61,39 +68,10 @@ public class RatesViewModel extends ViewModel {
      * @param rateModel - the new rate value
      */
     public void onRateChanged(@NonNull RateModel rateModel) {
-        double value = convertValueFromString(rateModel.getValue());
-        String code = convertCodeFromString(rateModel.getCode());
-        if(value<0){
-            ratesInteractor.clear();
-            errorLiveData.setValue(new ErrorModel(ErrorModel.Error.INVALID_USER_INPUT_VALUE));
-        }else{
-            ratesInteractor.fetchRatesAtFixedTime(code, value);
-        }
+        ratesInteractor.fetchRatesAtFixedTime(rateModel.getCode(), rateModel.getValue());
     }
 
-    /**
-     * Validate user code
-     * @param code the code to validate
-     * @return the normalized code
-     */
-    private String convertCodeFromString(String code){
-        return code;
-    }
 
-    /**
-     * Convert the string passed as parameter into a double value
-     * @param value the value to be converted
-     * @return the double value or -1 on error
-     */
-    private double convertValueFromString(String value) throws IllegalArgumentException{
-        try {
-            if(value.length()<= MAX_ALLOWED_LENGTH_VALUE){
-                return Double.valueOf(value);
-            }
-        } catch (NumberFormatException e) {
-        }
-        return -1;
-    }
 
 
     public static class RatesViewModelProvider implements ViewModelProvider.Factory {

@@ -26,11 +26,13 @@ import io.reactivex.schedulers.Schedulers;
 public class RatesInteractor {
     private static final String DEFAULT_CODE = "EUR";
     private static final double DEFAULT_VALUE = 100;
-    private final static long TIMER_PERIOD = 1;// express as seconds
+    private static final long TIMER_PERIOD = 1;// express as seconds
+    private static final double MAX_ALLOWED_LENGTH_VALUE = 7;
+
 
     private MutableLiveData<List<Rate>> rates;
     private MutableLiveData<Boolean> loading;
-    private MutableLiveData<Throwable> error;
+    private MutableLiveData<RateInteractorException> error;
 
     private final Repository repository;
     private Disposable disposable;
@@ -44,9 +46,9 @@ public class RatesInteractor {
         this.currentCode = DEFAULT_CODE;
         this.currentValue = DEFAULT_VALUE;
 
-        rates = new MutableLiveData<>();
-        loading = new MutableLiveData<>();
-        error = new MutableLiveData<>();
+        this.rates = new MutableLiveData<>();
+        this.loading = new MutableLiveData<>();
+        this.error = new MutableLiveData<>();
     }
 
     public void retryLastValue() {
@@ -54,9 +56,26 @@ public class RatesInteractor {
         fetchRates(currentCode,currentValue);
     }
 
-    public void fetchRatesAtFixedTime(final String code,final double value){
+    /**
+     * Fetch and calculate the the exchange rate at fixed time
+     * @param code the currency code
+     * @param value the double value
+     */
+    public void fetchRatesAtFixedTime(final String code,final String value){
         clear();
-        fetchRates(code,value);
+        try {
+            String mCode = convertCodeFromString(code);
+            double mValue = convertValueFromString(value);
+            fetchRates(mCode,mValue);
+        } catch (RateInteractorException e) {
+            e.printStackTrace();
+            error.postValue(e);
+            rates.postValue(createRate(oldExchangeRates,0));
+        }
+    }
+
+    public void fetchRatesAtFixedTime(final String code,final double value){
+        fetchRatesAtFixedTime(code,String.valueOf(value));
     }
 
     public void fetchDefaultRateAtFixedTime(){
@@ -94,8 +113,8 @@ public class RatesInteractor {
                 .subscribe(exchangeRates -> {
                     rates.postValue(exchangeRates);
                 }, throwable -> {
-                    error.postValue(throwable);
                     clear(); // stop current
+                    error.postValue(new RateInteractorException(RateInteractorException.ErrorType.NETWORK,throwable));
                 });
 
     }
@@ -138,8 +157,40 @@ public class RatesInteractor {
         return loading;
     }
 
-    public MutableLiveData<Throwable> getErrorLiveData() {
+    public MutableLiveData<RateInteractorException> getErrorLiveData() {
         return error;
     }
 
+
+    /**
+     * Validate user code
+     * @param code the code to validate
+     * @return the normalized code
+     * @throws RateInteractorException if the code passed as parameter is not a valid code
+     */
+    private String convertCodeFromString(String code) throws RateInteractorException {
+        if(code.isEmpty()){
+            throw new RateInteractorException("The currency code cannot be empty",RateInteractorException.ErrorType.INVALID_USER_INPUT_VALUE);
+        }
+        return code;
+    }
+
+    /**
+     * Validate the input value passed as parameter and
+     * Convert the string passed as parameter into a double value
+     *
+     * @param value the value to be converted
+     * @return the double value or -1 on error
+     * @throws RateInteractorException if the value passed is not a valid value
+     */
+    private double convertValueFromString(String value) throws RateInteractorException{
+        try {
+            if(value.length() > MAX_ALLOWED_LENGTH_VALUE){
+                throw new RateInteractorException("The value exceed the maximum allowed size [ "+value+" ] ",RateInteractorException.ErrorType.INVALID_USER_INPUT_VALUE);
+            }
+            return Double.valueOf(value);
+        } catch (NumberFormatException e) {
+            throw new RateInteractorException("the value is no a double [ "+value+ " ]",RateInteractorException.ErrorType.INVALID_USER_INPUT_VALUE);
+        }
+    }
 }
