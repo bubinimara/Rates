@@ -93,7 +93,6 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
             }
 
         notifyItemMoved(fromPosition, 0);
-        // todo: find clear solution to update focus
         // to force redraw - ( trick for text focus )
         notifyItemChanged(0, null);
         notifyItemChanged(1, null);
@@ -174,8 +173,8 @@ public class RatesAdapter extends RecyclerView.Adapter<RatesAdapter.Holder> {
         }else{
 
             List<RateModel> newList = new ArrayList<>(rateModels.size());
-            //todo: -- remove --
-            // temporary hack to prevent not update the first item
+            // prevent not update the first item
+            // NOTE
             // !? the first item should be treated as special ?!
             rateModels.remove(getItem(0));
             newList.add(getItem(0));
